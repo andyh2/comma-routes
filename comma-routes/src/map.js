@@ -11,18 +11,21 @@ class Map extends Component {
         mapStyle={'mapbox://styles/mapbox/dark-v9'}
         longitude={-122.3976141621346}
         latitude={37.762534623904656}
-        zoom={13}
+        zoom={11}
         maxZoom={16}
         pitch={45}
         bearing={0}
+        {...this.props.viewport}
         >
         {this.props.overlay}
       </MapGL>);
     }
 }
 
+
 Map.PropTypes = {
-    overlay: React.PropTypes.element
+    overlay: React.PropTypes.element,
+    viewport: React.PropTypes.object.isRequired
 }
 
 export default Map

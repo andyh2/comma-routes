@@ -1,41 +1,65 @@
 import React, { Component } from 'react';
 import DeckGL from 'deck.gl/react';
-import {ExtrudedChoroplethLayer64, Viewport} from 'deck.gl';
-import RoutesLayer from './routes-layer'
-import {join} from 'path';
 import {getRoutes} from './routes'
 import Map from './map'
+import TripsLayer from './trips-layer'
+import TWEEN from 'tween.js'
 
 class DeckGLRoutes extends Component {
   constructor() {
     super()
+
     this.state = {
-      routes: [],
+      trips: [],
       time: 0
     }
+    const that = this
 
-    getRoutes((route) => {
-      this.setState({routes: this.state.routes.concat([route])})
+    this.tween = new TWEEN.Tween({time: 0})
+          .to({time: 3600}, 120000)
+          .onUpdate(function() { that.setState(this) })
+          .repeat(Infinity);
+
+    getRoutes((trip) => {
+      this.setState({trips: this.state.trips.concat([trip])})
     })
   }
+
+  tweenAnimate() {
+    TWEEN.update();
+    requestAnimationFrame(this.tweenAnimate.bind(this));
+  }
+
+  componentDidMount() {
+    const that = this;
+    this.tween.start();
+    this.tweenAnimate();
+  }
+
+  componentWillUnmount() {
+    this.tween.stop();
+  }
+
   render() {
-    const viewport = new Viewport();
-    const routesLayer = new RoutesLayer({
-      strokeWidth: 2,
-      routes: this.state.routes,
-      id: 'routes',
+    const tripsLayers = this.state.trips.map((trip, index) => new TripsLayer({
+      strokeWidth: 30,
+      data: [trip],
+      id: `routes-${index}`,
       trailLength: 180,
       currentTime: this.state.time,
       getPath: d => d.segments,
       getColor: d => [253,128,93], // : [23,184,190],
-      opacity: 0.3
-    })
+      opacity: 1
+    }))
 
-    const layers = [routesLayer]
     return (
-      <DeckGL width={1440} height={900} layers={layers} />
+      <DeckGL {...this.props.viewport} layers={tripsLayers} />
     );
   }
+}
+
+DeckGLRoutes.propTypes = {
+  viewport: React.PropTypes.object.isRequired
 }
 
 class App extends Component {
@@ -44,8 +68,13 @@ class App extends Component {
   }
 
   render() {
+    const viewport = {
+      width: 1440,
+      height: 900
+    }
+
     return (
-      <Map overlay={<DeckGLRoutes />} />
+      <Map viewport={viewport} overlay={<DeckGLRoutes viewport={viewport} />} />
     );
   }
 }

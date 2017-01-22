@@ -1,8 +1,6 @@
 import {Layer, assembleShaders} from 'deck.gl';
-import {Model, Program, Geometry, glGetDebugInfo} from 'luma.gl';
+import {Model, Program, Geometry} from 'luma.gl';
 import {join} from 'path';
-
-const glslify = require('glslify');
 
 class TripsLayer extends Layer {
     initializeState() {
@@ -41,7 +39,7 @@ class TripsLayer extends Layer {
         if (!data) {
           return;
         }
-        console.log(data)
+
         const {getPath} = this.props;
         let vertexCount = 0;
         const pathLengths = data.reduce((acc, d) => {
@@ -89,12 +87,10 @@ class TripsLayer extends Layer {
               gl.polygonOffset(2.0, 1.0);
               gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
               gl.blendEquation(gl.FUNC_ADD);
-              console.log('beforerender')
             },
             onAfterRender: () => {
               gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
               gl.disable(gl.POLYGON_OFFSET_FILL);
-              console.log('afterender')
             }
           }
 
@@ -116,8 +112,10 @@ class TripsLayer extends Layer {
            indices[index++] = j + offset;
          }
          indices[index++] = offset + l - 1;
+
          offset += l;
        }
+
        attribute.value = indices;
        this.state.model.setVertexCount(indicesCount);
      }
@@ -128,13 +126,18 @@ class TripsLayer extends Layer {
        const positions = new Float32Array(vertexCount * 3);
 
        let index = 0;
+       let max_time = 0;
        for (let i = 0; i < data.length; i++) {
          const path = getPath(data[i]);
+
          for (let j = 0; j < path.length; j++) {
            const pt = path[j];
            positions[index++] = pt[0];
            positions[index++] = pt[1];
            positions[index++] = pt[2];
+           if (pt[2] > max_time) {
+            max_time = pt[2]
+           }
          }
        }
        attribute.value = positions;
@@ -160,3 +163,4 @@ class TripsLayer extends Layer {
 }
 
 export default TripsLayer
+
