@@ -1,80 +1,140 @@
 import React, { Component } from 'react';
-import DeckGL from 'deck.gl/react';
 import {getRoutes} from './routes'
 import Map from './map'
 import TripsLayer from './trips-layer'
 import TWEEN from 'tween.js'
+import geoViewport from 'geo-viewport'
+import DeckGLRoutes from './deck-gl-routes'
 
-class DeckGLRoutes extends Component {
+class App extends Component {
   constructor() {
     super()
 
-    this.state = {
-      trips: [],
-      time: 0
+    const initialViewport = {
+      width: 1440,
+      height: 900,
+      longitude: -122.3976141621346,
+      latitude: 37.762534623904656,
+      zoom: 11,
+      maxZoom: 16,
+      pitch: 45,
+      bearing: 0
     }
-    const that = this
 
-    this.tween = new TWEEN.Tween({time: 0})
-          .to({time: 3600}, 120000)
-          .onUpdate(function() { that.setState(this) })
-          .repeat(Infinity);
+    this.state = {
+      maxTime: 0,
+      trips: [],
+      viewport: initialViewport,
+      tripBounds: {
+        west: Number.MAX_SAFE_INTEGER,
+        south: Number.MAX_SAFE_INTEGER,
+        east: -Number.MAX_SAFE_INTEGER,
+        north: -Number.MAX_SAFE_INTEGER
+      }
+    }
 
     getRoutes((trip) => {
-      this.setState({trips: this.state.trips.concat([trip])})
+      this.addTrip(trip)
     })
   }
 
-  tweenAnimate() {
-    TWEEN.update();
-    requestAnimationFrame(this.tweenAnimate.bind(this));
+  addTrip(trip) {
+    const newState = {trips: this.state.trips.concat([trip])}
+
+    if (trip.duration > this.state.maxTime) {
+      newState.maxTime = trip.duration;
+    }
+
+    this.setState(newState, () => {
+      this.updateTripBounds(trip)
+    });
+  }
+
+  updateTripBounds(trip) {
+    let tripBounds = this.state.tripBounds;
+    var {west, south, east, north} = tripBounds;
+
+    for(let segment of trip.segments) {
+      const long = segment[0], lat = segment[1];
+      if (long < west) {
+        west = long
+      }
+      if (lat < south) {
+        south = lat
+      }
+      if (long > east) {
+        east = long
+      }
+      if (lat > north) {
+        north = lat
+      }
+    }
+    tripBounds = {west, south, east, north}
+
+    this.setState({tripBounds}, this.updateViewport)
+  }
+
+  updateViewport() {
+    /*
+    Sets viewport to contain all trips
+    */
+    const {west, south, east, north} = this.state.tripBounds
+    const viewport = this.state.viewport
+
+    const boundedViewport = geoViewport.viewport(
+      [west, south, east, north],
+      [viewport.width, viewport.height])
+
+    viewport.longitude = boundedViewport.center[0]
+    viewport.latitude = boundedViewport.center[1]
+    viewport.zoom = boundedViewport.zoom
+
+    this.setState({viewport})
+  }
+
+  updateDimensions() {
+     const w = window,
+         d = document,
+         documentElement = d.documentElement,
+         body = d.getElementsByTagName('body')[0],
+         width = w.innerWidth || documentElement.clientWidth || body.clientWidth,
+         height = w.innerHeight|| documentElement.clientHeight|| body.clientHeight;
+    const viewport = this.state.viewport
+    viewport.width = width;
+    viewport.height = height;
+    this.setState({viewport});
+  }
+
+  componentWillMount() {
+    this.updateDimensions();
   }
 
   componentDidMount() {
-    const that = this;
-    this.tween.start();
-    this.tweenAnimate();
+    window.addEventListener("resize", this.updateDimensions.bind(this));
   }
 
   componentWillUnmount() {
-    this.tween.stop();
+    window.removeEventListener("resize", this.updateDimensions.bind(this));
+  }
+
+  _viewportChanged(newViewport) {
+    // Called when user drags or zooms map
+    const viewport = this.state.viewport
+    Object.assign(viewport, newViewport)
+    this.setState({viewport})
   }
 
   render() {
-    const tripsLayers = this.state.trips.map((trip, index) => new TripsLayer({
-      strokeWidth: 30,
-      data: [trip],
-      id: `routes-${index}`,
-      trailLength: 180,
-      currentTime: this.state.time,
-      getPath: d => d.segments,
-      getColor: d => [253,128,93], // : [23,184,190],
-      opacity: 1
-    }))
-
+    const deckGlOverlay = (<DeckGLRoutes
+          viewport={this.state.viewport}
+          maxTime={this.state.maxTime}
+          tweenDuration={10000}
+          trips={this.state.trips}
+        />)
     return (
-      <DeckGL {...this.props.viewport} layers={tripsLayers} />
-    );
-  }
-}
-
-DeckGLRoutes.propTypes = {
-  viewport: React.PropTypes.object.isRequired
-}
-
-class App extends Component {
-  updateMap(viewport) {
-
-  }
-
-  render() {
-    const viewport = {
-      width: 1440,
-      height: 900
-    }
-
-    return (
-      <Map viewport={viewport} overlay={<DeckGLRoutes viewport={viewport} />} />
+      <Map viewport={this.state.viewport}
+        viewportChanged={this._viewportChanged.bind(this)}
+        overlay={deckGlOverlay} />
     );
   }
 }

@@ -1,3 +1,6 @@
+/*
+Modified https://github.com/uber/deck.gl/blob/master/demo/src/javascripts/components/demos/trips-layer/trips-layer.js
+*/
 import {Layer, assembleShaders} from 'deck.gl';
 import {Model, Program, Geometry} from 'luma.gl';
 import {join} from 'path';
@@ -22,10 +25,6 @@ class TripsLayer extends Layer {
     }
 
     updateState({props, oldProps, changeFlags: {dataChanged, somethingChanged}}) {
-        /*
-        Called when a new layer has been matched with a layer from the previous render cycle (resulting in new props being passed to that layer), or when context has changed and layers are about to be drawn.
-        */
-
         const {attributeManager} = this.state;
         if (dataChanged) {
           this.countVertices(props.data);
@@ -52,6 +51,7 @@ class TripsLayer extends Layer {
 
       updateUniforms() {
         const {opacity, trailLength, currentTime} = this.props;
+
         this.setUniforms({
           opacity,
           trailLength,
@@ -126,7 +126,6 @@ class TripsLayer extends Layer {
        const positions = new Float32Array(vertexCount * 3);
 
        let index = 0;
-       let max_time = 0;
        for (let i = 0; i < data.length; i++) {
          const path = getPath(data[i]);
 
@@ -135,9 +134,6 @@ class TripsLayer extends Layer {
            positions[index++] = pt[0];
            positions[index++] = pt[1];
            positions[index++] = pt[2];
-           if (pt[2] > max_time) {
-            max_time = pt[2]
-           }
          }
        }
        attribute.value = positions;
@@ -163,4 +159,3 @@ class TripsLayer extends Layer {
 }
 
 export default TripsLayer
-

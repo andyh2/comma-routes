@@ -20,7 +20,8 @@ function routeToTrip(route) {
   return {
     segments: segmentsFromRoute(route, routeDuration),
     startTime: 0,
-    endTime: routeDuration
+    endTime: routeDuration,
+    duration: routeDuration
   }
 }
 

@@ -7,14 +7,8 @@ class Map extends Component {
         return (<MapGL
         mapboxApiAccessToken={MAPBOX_API_TOKEN}
         perspectiveEnabled={true}
-        onChangeViewPort={this.updateMap}
+        onChangeViewport={this.props.viewportChanged}
         mapStyle={'mapbox://styles/mapbox/dark-v9'}
-        longitude={-122.3976141621346}
-        latitude={37.762534623904656}
-        zoom={11}
-        maxZoom={16}
-        pitch={45}
-        bearing={0}
         {...this.props.viewport}
         >
         {this.props.overlay}
@@ -25,7 +19,8 @@ class Map extends Component {
 
 Map.PropTypes = {
     overlay: React.PropTypes.element,
-    viewport: React.PropTypes.object.isRequired
+    viewport: React.PropTypes.object.isRequired,
+    viewportChanged: React.PropTypes.func
 }
 
 export default Map
