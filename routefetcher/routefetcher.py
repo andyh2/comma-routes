@@ -27,10 +27,18 @@ def coords_for_route(route):
 
 if __name__ == '__main__':
 	routes = fetch_routes(os.environ['COMMA_AUTH'])
+	route_files = []
+
 	for route_time, route in routes.items():
 		route['coords'] = coords_for_route(route)
-		with open(route_time + '.json', 'w') as f:
+		route_file = route_time + '.json'
+		with open(route_file, 'w') as f:
 			json.dump(route, f)
+			route_files.append(route_file)
+
+	with open('listing.json', 'w') as f:
+		json.dump(route_files, f)
+
 
 
 
