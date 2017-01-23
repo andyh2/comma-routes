@@ -3,7 +3,8 @@
 ## Running locally
 
 ```sh
-cd comma-routes
+git clone https://github.com/andyh2/comma-routes.git
+cd comma-routes/comma-routes
 npm install
 node scripts/start.js
 ```

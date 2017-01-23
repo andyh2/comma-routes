@@ -2,7 +2,6 @@ var autoprefixer = require('autoprefixer');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-var UglifyJsPlugin = require('webpack-uglify-js-plugin')
 var InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 var WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 var getClientEnvironment = require('./env');
