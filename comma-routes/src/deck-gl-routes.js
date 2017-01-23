@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import DeckGL from 'deck.gl/react';
+import TripsLayer from './trips-layer'
+import TWEEN from 'tween.js'
+
 class DeckGLRoutes extends Component {
   constructor(props) {
     super(props)

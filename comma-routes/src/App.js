@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import {getRoutes} from './routes'
 import Map from './map'
-import TripsLayer from './trips-layer'
-import TWEEN from 'tween.js'
 import geoViewport from 'geo-viewport'
 import DeckGLRoutes from './deck-gl-routes'
 

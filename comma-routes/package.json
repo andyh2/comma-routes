@@ -56,15 +56,11 @@
     "glslify-loader": "^1.0.2",
     "immutable": "^3.8.1",
     "luma.gl": "^2.10.4",
-    "raw-loader": "^0.5.1",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-map-gl": "^2.0.0",
     "transform-loader": "^0.2.3",
     "tween.js": "^16.3.5",
-    "webpack-comment-remover-loader": "0.0.3",
-    "webpack-uglify-js-plugin": "^1.1.9",
-    "webworkify-webpack": "^1.1.8",
     "webworkify-webpack-dropin": "^1.1.9"
   },
   "scripts": {
